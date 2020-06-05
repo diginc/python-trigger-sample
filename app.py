@@ -35,7 +35,7 @@ def main():
 
         print "All test runs passed."
 
-
+        
 def _get_result(test_run):
     # generate Personal Access Token at https://www.runscope.com/applications
     if not "RUNSCOPE_ACCESS_TOKEN" in os.environ:
@@ -57,8 +57,18 @@ def _get_result(test_run):
         "Authorization": "Bearer {}".format(API_TOKEN),
         "User-Agent": "python-trigger-sample"
     }
+    http_respo = None
+    retries = 0
+    retries_max = 10
     result_resp = requests.get(result_url, headers=headers)
+    while not result_resp.ok and retries < retries_max:
+        time.sleep(5)
+        print 'retrying'
+        result_resp = requests.get(result_url, headers=headers)
+        retries = retries + 1
 
+    result_resp.raise_for_status()
+    
     if result_resp.ok:
         return result_resp.json().get("data")
 
